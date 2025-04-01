@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="giang" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Define properties for common values -->
+  <xacro:property name="mesh_path" value="package://giang/meshes/" />
+  <xacro:property name="default_color" value="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+
+  <!-- Macro for inertial properties -->
+  <xacro:macro name="inertial" params="origin_xyz origin_rpy mass ixx ixy ixz iyy iyz izz">
+    <inertial>
+      <origin xyz="${origin_xyz}" rpy="${origin_rpy}" />
+      <mass value="${mass}" />
+      <inertia ixx="${ixx}" ixy="${ixy}" ixz="${ixz}" iyy="${iyy}" iyz="${iyz}" izz="${izz}" />
+    </inertial>
+  </xacro:macro>
+
+  <!-- Macro for visual properties -->
+  <xacro:macro name="visual" params="origin_xyz origin_rpy mesh_file color">
+    <visual>
+      <origin xyz="${origin_xyz}" rpy="${origin_rpy}" />
+      <geometry>
+        <mesh filename="${mesh_path}${mesh_file}" />
+      </geometry>
+      <material name="">
+        <color rgba="${color}" />
+      </material>
+    </visual>
+  </xacro:macro>
+
+  <!-- Macro for collision properties -->
+  <xacro:macro name="collision" params="origin_xyz origin_rpy mesh_file">
+    <collision>
+      <origin xyz="${origin_xyz}" rpy="${origin_rpy}" />
+      <geometry>
+        <mesh filename="${mesh_path}${mesh_file}" />
+      </geometry>
+    </collision>
+  </xacro:macro>
+
+  <!-- Macro for a complete link -->
+  <xacro:macro name="link" params="name mesh_file inertial_params visual_color">
+    <link name="${name}">
+      <xacro:inertial origin_xyz="${inertial_params[0]}" origin_rpy="${inertial_params[1]}" mass="${inertial_params[2]}" 
+                      ixx="${inertial_params[3]}" ixy="${inertial_params[4]}" ixz="${inertial_params[5]}" 
+                      iyy="${inertial_params[6]}" iyz="${inertial_params[7]}" izz="${inertial_params[8]}" />
+      <xacro:visual origin_xyz="0 0 0" origin_rpy="0 0 0" mesh_file="${mesh_file}" color="${visual_color}" />
+      <xacro:collision origin_xyz="0 0 0" origin_rpy="0 0 0" mesh_file="${mesh_file}" />
+    </link>
+  </xacro:macro>
+
+  <!-- Macro for joints -->
+  <xacro:macro name="joint" params="name type parent child origin_xyz origin_rpy axis_xyz *limit">
+    <joint name="${name}" type="${type}">
+      <origin xyz="${origin_xyz}" rpy="${origin_rpy}" />
+      <parent link="${parent}" />
+      <child link="${child}" />
+      <axis xyz="${axis_xyz}" />
+      <xacro:if test="${'limit' in locals()}">
+        <limit lower="${limit[0]}" upper="${limit[1]}" effort="${limit[2]}" velocity="${limit[3]}" />
+      </xacro:if>
+    </joint>
+  </xacro:macro>
+
+  <!-- Base Link -->
+  <xacro:link name="base_link" mesh_file="base_link.STL" 
+              inertial_params="0 0 0 0 0 0 4 0.00190294205026824 -0.000114075013577605 -3.93773068625565E-05 0.00195033809154291 -0.000339835287344812 0.00302612684815536" 
+              visual_color="0.650980392156863 0.619607843137255 0.588235294117647 1" />
+
+  <!-- Traicam Link -->
+  <xacro:link name="traicam" mesh_file="traicam.STL" 
+              inertial_params="1.11127516957965E-06 0.00454255329124797 0.013285762321554 0 0 0 0.216553757587495 4.5330321268905E-05 2.24020791294186E-09 1.23633240403192E-09 4.91826515535104E-05 1.12578799582933E-05 7.82689182650466E-05" 
+              visual_color="0.294117647058824 0.294117647058824 0.294117647058824 1" />
+
+  <xacro:joint name="j_traicam" type="continuous" parent="base_link" child="traicam" 
+               origin_xyz="0.07224 -0.12222 -0.061203" origin_rpy="-1.6753 -0.96906 -2.2668" axis_xyz="0 0.32332 0.94629" />
+
+  <!-- Phaicam Link -->
+  <xacro:link name="phaicam" mesh_file="phaicam.STL" 
+              inertial_params="-2.85432592229268E-06 1.19242671126063E-06 -0.0297744682764462 0 0 0 0.2165537429782 4.53336998537909E-05 -2.31768775303798E-09 -4.78882419731045E-09 4.53310330222237E-05 2.76844729913603E-09 8.21171557673177E-05" 
+              visual_color="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+
+  <xacro:joint name="j_phaicam" type="continuous" parent="base_link" child="phaicam" 
+               origin_xyz="0.10376 0.1673 0.020053" origin_rpy="-0.79655 -1.2374 -1.324" axis_xyz="0 0 1" />
+
+  <!-- Saucam Link -->
+  <xacro:link name="saucam" mesh_file="saucam.STL" 
+              inertial_params="9.02574320837957E-10 3.2498472427589E-06 0.0768266214061987 0 0 0 0.216553751062434 4.53296981278038E-05 1.37634899950636E-12 3.56525606834499E-12 4.53350436706611E-05 5.53193597537422E-09 8.21171642070257E-05" 
+              visual_color="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+
+  <xacro:joint name="j_saucam" type="continuous" parent="base_link" child="saucam" 
+               origin_xyz="-0.089592 0.0095916 -0.024209" origin_rpy="-1.5614 -0.55681 1.5374" axis_xyz="0 0 1" />
+
+  <!-- Cam Link -->
+  <xacro:link name="cam" mesh_file="cam.STL" 
+              inertial_params="-0.00549159067882473 0.000142782093136729 0.00542399688213652 0 0 0 0.00106909376084806 1.96245738762131E-08 -6.82424005356248E-24 -8.32350491381484E-24 1.96245738762131E-08 -3.01920923581855E-23 1.6906568016913E-08" 
+              visual_color="${default_color}" />
+
+  <xacro:joint name="j_cam" type="fixed" parent="base_link" child="cam" 
+               origin_xyz="0.05 0 0.01" origin_rpy="0 0.0873 -0.5236" axis_xyz="0 0 0" />
+
+  <!-- Lidar Link -->
+  <xacro:link name="lidar" mesh_file="lidar.STL" 
+              inertial_params="0 0 0 0 0 0 0.5 0.000449679095584544 2.81363257557769E-05 -1.24593204258014E-08 0.000772785451493485 8.98983080473076E-08 0.000555359086215568" 
+              visual_color="${default_color}" />
+
+  <xacro:joint name="j_lidar" type="fixed" parent="base_link" child="lidar" 
+               origin_xyz="0 0 0.05" origin_rpy="0 0 0" axis_xyz="0 0 0" />
+
+  <!-- TT1 Link -->
+  <xacro:link name="tt1" mesh_file="tt1.STL" 
+              inertial_params="5.55111512312578E-16 -1.41553435639707E-15 0.0817027065570053 0 0 0 0.273318560862312 0.0005132055655918 -2.71050543121376E-20 -4.36221967835965E-20 0.000513205565591801 2.05829006182795E-19 8.96532003518189E-05" 
+              visual_color="${default_color}" />
+
+  <xacro:joint name="j_tt1" type="prismatic" parent="base_link" child="tt1" 
+               origin_xyz="0 6.0234E-05 -0.00021462" origin_rpy="-0.27361 0.0020889 -3.1341" axis_xyz="0 0 1" 
+               limit="0 0 0 0" />
+
+  <!-- TT2 Link -->
+  <xacro:link name="tt2" mesh_file="tt2.STL" 
+              inertial_params="5.55111512312578E-17 2.22044604925031E-16 -0.0558509099130727 0 0 0 0.0706858347057703 6.28809404570082E-05 3.17637355220363E-22 -3.61047793767146E-20 6.28809404570082E-05 1.75282880522437E-19 7.95215640439916E-06" 
+              visual_color="${default_color}" />
+
+  <xacro:joint name="j_tt2" type="prismatic" parent="base_link" child="tt2" 
+               origin_xyz="-0.0529676319958768 -0.106682839638125 0.138135732675067" origin_rpy="-1.35924840820937 0.00504628222108553 -0.698372509057435" 
+               axis_xyz="0 0 1" limit="0 0 0 0" />
+
+  <!-- Gazebo Plugins -->
+  <gazebo reference="cam">
+    <sensor type="camera" name="camera1">
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30.0</updateRate>
+        <cameraName>/giang/camera1</cameraName>
+        <imageTopicName>/giang/image_raw</imageTopicName>
+        <cameraInfoTopicName>/giang/camera_info</cameraInfoTopicName>
+        <frameName>cam</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="lidar">
+    <sensor type="ray" name="lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.1416</min_angle>
+            <max_angle>3.1416</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.1</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
+        <topicName>/giang/scan</topicName>
+        <frameName>lidar</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
